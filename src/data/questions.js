@@ -6,8 +6,8 @@ export const SOAL_MISA = [
   { q: "Siapakah yang bertugas membaptis Yesus di sungai Yordan?", n: "B", type: "choice", img: "/yohanespembaptis.jpg", emoji: "🌊", opts: ["Petrus", "Yohanes Pembaptis", "Musa", "Gabriel"] },
   { q: "Malaikat yang datang menemui Maria untuk memberi kabar bahwa ia akan mengandung disebut...", n: "C", type: "choice", img: "/gabriel.jpg", emoji: "👼", opts: ["Malaikat Rafael", "Malaikat Kegelapan", "Malaikat Gabriel", "Malaikat Mikael"] },
   { q: "Yesus sangat menyayangi ibu-Nya yang bernama...", n: "D", type: "choice", img: "/bundamaria.jpg", emoji: "👩", opts: ["Magdalena", "Marta", "Elisabet", "Bunda Maria"] },
-  { q: "Pemimpin utama umat Katolik di wilayah Denpasar dan sekitarnya disebut...", n: "D", type: "choice", img: "/uskupagung.jpg", emoji: "🏛️", opts: ["Suster", "Guru Agama", "Ketua Kelas", "Uskup Agung Denpasar"] },
-  { q: "Siapakah yang memimpin perayaan misa di gereja setiap hari Minggu?", n: "C", type: "choice", img: "/romo.jpeg", emoji: "⛪", opts: ["Umat", "Petugas Kebersihan", "Romo / Imam", "Pemain Musik"] },
+  { q: "Pemimpin utama umat Katolik di wilayah Bali dan sekitarnya disebut...", n: "D", type: "choice", img: "/uskupagung.jpg", emoji: "🏛️", opts: ["Suster", "Frater", "Romo", "Uskup"] },
+  { q: "Siapakah yang memimpin perayaan misa pada hari ini?", n: "C", type: "choice", img: "/romo.jpeg", emoji: "⛪", opts: ["Umat", "Frater", "Romo", "Diakon"] },
   { q: "Tokoh yang membawa bangsa Israel keluar dari Mesir dan membelah laut adalah...", n: "D", type: "choice", img: "/Musa.jpeg", emoji: "🌊", opts: ["Daud", "Adam", "Yusuf", "Musa"] }
 ];
 

@@ -155,48 +155,50 @@ function LiveDashboardScreen({ players, onFinish }) {
   return (
     <div className="min-h-screen flex flex-col p-4 sm:p-5 gap-4" style={{ background: '#0a0a1a' }}>
       {/* Top bar */}
-      <div className="flex items-center justify-between dash-card p-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between dash-card p-4 gap-4">
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full" style={{ background: 'var(--green)', boxShadow: '0 0 8px var(--green)', animation: 'pulseDot 1.5s ease infinite' }} />
-          <h2 className="font-title text-xl" style={{ color: 'var(--gold)' }}>LIVE SCOREBOARD</h2>
+          <h2 className="font-title text-lg sm:text-xl" style={{ color: 'var(--gold)' }}>LIVE SCOREBOARD</h2>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-white/40 text-xs uppercase tracking-widest">Total Peserta</div>
-            <div className="font-bold text-xl">{players.length}</div>
+        <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto border-t sm:border-none border-white/10 pt-3 sm:pt-0">
+          <div className="text-left sm:text-right">
+            <div className="text-white/40 text-[10px] uppercase tracking-widest">Peserta</div>
+            <div className="font-bold text-lg sm:text-xl">{players.length}</div>
           </div>
-          <button onClick={onFinish} className="btn btn-purple text-sm px-6 py-3 ml-4">🏆 AKHIRI KUIS & LIHAT HASIL</button>
+          <button onClick={onFinish} className="btn btn-purple text-xs sm:text-sm px-4 sm:px-6 py-3">
+            🏆 <span className="hidden sm:inline">AKHIRI KUIS & </span>HASIL
+          </button>
         </div>
       </div>
 
-      <div className="dash-card p-6 flex-1 flex flex-col gap-4 overflow-hidden">
-        <div className="grid grid-cols-12 gap-4 text-white/40 text-xs uppercase tracking-widest font-bold px-4 mb-2">
-          <div className="col-span-1">Rank</div>
-          <div className="col-span-6">Peserta</div>
-          <div className="col-span-2 text-center">Benar</div>
-          <div className="col-span-3 text-right">Poin</div>
+      <div className="dash-card p-4 sm:p-6 flex-1 flex flex-col gap-4 overflow-hidden">
+        {/* Header Grid */}
+        <div className="grid grid-cols-12 gap-2 text-white/40 text-[10px] uppercase tracking-widest font-bold px-2 mb-2">
+          <div className="col-span-2">RANK</div>
+          <div className="col-span-5">PESERTA</div>
+          <div className="col-span-2 text-center">BNR</div>
+          <div className="col-span-3 text-right">POIN</div>
         </div>
         
-        <div className="flex flex-col gap-3 overflow-y-auto pr-2 pb-10" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+        <div className="flex flex-col gap-3 overflow-y-auto pr-2 pb-10" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           {players.map((p, i) => (
-            <div key={i} className="flex items-center bg-white/5 rounded-xl p-4 border border-white/5 transition-all duration-500" 
+            <div key={i} className="grid grid-cols-12 gap-2 items-center bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5 transition-all duration-500" 
                  style={{ 
-                   transform: `translateY(0)`,
                    borderColor: i===0 ? 'rgba(245,197,24,0.4)' : i===1 ? 'rgba(156,163,175,0.4)' : i===2 ? 'rgba(205,127,50,0.4)' : 'rgba(255,255,255,0.05)',
                    background: i===0 ? 'rgba(245,197,24,0.1)' : ''
                  }}>
-              <div className="col-span-1 w-12 font-title text-2xl" style={{ color: i===0?'var(--gold)':i===1?'#9ca3af':i===2?'#cd7f32':'rgba(255,255,255,0.4)' }}>
+              <div className="col-span-2 font-title text-xl sm:text-2xl" style={{ color: i===0?'var(--gold)':i===1?'#9ca3af':i===2?'#cd7f32':'rgba(255,255,255,0.4)' }}>
                 #{i+1}
               </div>
-              <div className="col-span-6 flex-1 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
+              <div className="col-span-5 flex items-center gap-2 sm:gap-4 overflow-hidden">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-lg font-bold flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg,#6c3fc5,#9b6dff)' }}>{p.nama?.[0]||'?'}</div>
-                <span className="font-bold text-lg truncate">{p.nama}</span>
+                <span className="font-bold text-sm sm:text-lg truncate">{p.nama}</span>
               </div>
-              <div className="col-span-2 w-24 text-center font-bold text-green-400 text-lg">
+              <div className="col-span-2 text-center font-bold text-green-400 text-sm sm:text-lg">
                 {p.benar || 0}
               </div>
-              <div className="col-span-3 w-32 text-right font-title text-2xl" style={{ color: 'var(--gold)' }}>
+              <div className="col-span-3 text-right font-title text-xl sm:text-2xl" style={{ color: 'var(--gold)' }}>
                 {p.points || 0}
               </div>
             </div>
@@ -374,9 +376,16 @@ export default function DashboardApp() {
     });
   };
 
-  if (screen === 'lobby')     return <LobbyScreen players={players} onStart={handleStart} onReset={handleReset} musicOn={musicOn} onToggleMusic={toggleMusic} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} isLocked={isLocked} onToggleLock={handleToggleLock} />;
-  if (screen === 'countdown') return <CountdownScreen count={countNum} />;
-  if (screen === 'live')      return <LiveDashboardScreen players={players} onFinish={handleFinish} />;
-  if (screen === 'finish')    return <FinishScreen players={finishPlayers} onBackToLobby={handleBackToLobby} />;
-  return null;
+  return (
+    <>
+      {screen === 'lobby' && <LobbyScreen players={players} onStart={handleStart} onReset={handleReset} musicOn={musicOn} onToggleMusic={toggleMusic} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} isLocked={isLocked} onToggleLock={handleToggleLock} />}
+      {screen === 'countdown' && <CountdownScreen count={countNum} />}
+      {screen === 'live' && <LiveDashboardScreen players={players} onFinish={handleFinish} />}
+      {screen === 'finish' && <FinishScreen players={finishPlayers} onBackToLobby={handleBackToLobby} />}
+      
+      <footer className="fixed bottom-2 left-0 right-0 text-center pointer-events-none z-50">
+        <p className="text-white/10 text-[10px] tracking-[0.3em] uppercase">By Flyxa Dev</p>
+      </footer>
+    </>
+  );
 }
