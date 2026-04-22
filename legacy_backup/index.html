@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NEWDOWN KUIS · Peserta</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+:root {
+  --gold: #f5c518;
+  --gold2: #e8a500;
+  --purple: #6c3fc5;
+  --red: #e63946;
+  --green: #2dc653;
+  --dark: #0d0d20;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Noto Sans',sans-serif;
+  min-height:100vh;
+  background: linear-gradient(160deg, #0d0d20 0%, #1a0d35 50%, #0d1a20 100%);
+  display:flex; align-items:center; justify-content:center;
+  padding:16px; overflow-x:hidden;
+  transition: background 0.5s ease;
+}
+body.state-wrong { background: linear-gradient(160deg,#3a0a0a,#1a0505,#2a0808) !important; }
+body.state-correct { background: linear-gradient(160deg,#062010,#041a0c,#083020) !important; }
+
+.hidden { display:none !important; }
+
+/* CARD */
+.card {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 28px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+  width:100%; max-width:420px;
+  overflow:hidden;
+}
+.card-inner { padding:24px; }
+
+/* TOP STRIP */
+.top-strip {
+  height:4px;
+  background: linear-gradient(90deg, var(--purple), var(--gold), var(--purple));
+  background-size: 200% 100%;
+  animation: stripFlow 3s linear infinite;
+}
+@keyframes stripFlow { 0%{background-position:0%} 100%{background-position:200%} }
+
+/* FONT */
+.font-title { font-family:'Black Han Sans',sans-serif; }
+
+/* LOGO */
+.logo-cross {
+  font-size:3rem; display:block; text-align:center; margin-bottom:6px;
+  filter:drop-shadow(0 0 16px rgba(245,197,24,0.6));
+  animation: floatCross 3s ease-in-out infinite;
+}
+@keyframes floatCross { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+/* INPUT */
+.name-input {
+  width:100%; padding:16px; border-radius:16px;
+  background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.15);
+  color:white; font-family:'Black Han Sans',sans-serif; font-size:1.1rem;
+  text-align:center; text-transform:uppercase; outline:none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.name-input:focus {
+  border-color:var(--gold);
+  box-shadow: 0 0 0 3px rgba(245,197,24,0.2);
+}
+.name-input::placeholder { color:rgba(255,255,255,0.3); }
+
+/* BUTTONS */
+.btn {
+  font-family:'Black Han Sans',sans-serif;
+  border:none; border-radius:16px; cursor:pointer;
+  transition: all 0.15s; padding:16px; font-size:1rem;
+  letter-spacing:0.05em; width:100%;
+}
+.btn:active { transform:scale(0.97); }
+.btn-gold {
+  background: linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#0a0a1a;
+  box-shadow: 0 8px 0 rgba(180,120,0,0.5), 0 12px 20px rgba(245,197,24,0.25);
+}
+.btn-gold:active { box-shadow:0 3px 0 rgba(180,120,0,0.5); transform:translateY(3px); }
+.btn-outline {
+  background:transparent; color:rgba(255,255,255,0.7);
+  border:1.5px solid rgba(255,255,255,0.2);
+}
+
+/* TIMER */
+.timer-box {
+  background: rgba(0,0,0,0.4);
+  border-radius:12px; padding:6px 14px;
+  font-family:monospace; font-size:1.8rem; font-weight:900;
+  transition: color 0.3s, box-shadow 0.3s;
+  color: var(--gold);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.3);
+}
+.timer-box.warning { color:#f97316; box-shadow: inset 0 0 12px rgba(249,115,22,0.3), 0 0 20px rgba(249,115,22,0.2); }
+.timer-box.danger  { color:var(--red); box-shadow: inset 0 0 12px rgba(230,57,70,0.3), 0 0 20px rgba(230,57,70,0.2); animation:timerShake 0.3s ease infinite; }
+@keyframes timerShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+
+/* PUZZLE */
+.image-box {
+  position:relative; border-radius:18px; overflow:hidden;
+  border:3px solid rgba(255,255,255,0.15);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+}
+.image-box img { width:100%; aspect-ratio:1/1; object-fit:contain; background:#1a1a3a; display:block; }
+.puzzle-overlay {
+  position:absolute; inset:0; display:grid;
+  grid-template-columns:repeat(4,1fr);
+  grid-template-rows:repeat(4,1fr);
+  gap:2px;
+}
+.puzzle-piece {
+  background:rgba(13,13,32,0.92);
+  border:0.5px solid rgba(108,63,197,0.25);
+  cursor:pointer;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.puzzle-piece:hover:not(.revealed) { background:rgba(108,63,197,0.6); }
+.puzzle-piece.revealed { opacity:0; transform:scale(0.3) rotate(20deg); pointer-events:none; }
+
+/* CLICK COUNTER */
+.click-bar {
+  display:flex; gap:4px; justify-content:center; margin-top:8px; flex-wrap:wrap;
+}
+.click-pip {
+  width:16px; height:6px; border-radius:99px;
+  background:rgba(245,197,24,0.8);
+  transition: all 0.2s;
+}
+.click-pip.used { background:rgba(255,255,255,0.15); }
+
+/* CHOICE BUTTONS */
+.choice-btn {
+  background:rgba(255,255,255,0.08);
+  border:1.5px solid rgba(255,255,255,0.12);
+  border-radius:14px; color:white;
+  padding:14px 16px; text-align:left;
+  font-family:'Noto Sans',sans-serif; font-weight:700; font-size:0.9rem;
+  cursor:pointer; transition:all 0.2s; width:100%;
+}
+.choice-btn:hover:not(:disabled) {
+  background:rgba(108,63,197,0.3);
+  border-color:rgba(108,63,197,0.6);
+  transform:translateX(4px);
+}
+.choice-btn:active:not(:disabled) { transform:scale(0.98); }
+.choice-btn:disabled { opacity:0.6; cursor:default; transform:none !important; }
+.choice-btn.correct { background:rgba(45,198,83,0.2); border-color:var(--green); color:#7fffa0; }
+.choice-btn.wrong   { background:rgba(230,57,70,0.2); border-color:var(--red); color:#ffaaaa; }
+
+/* STATUS MSG */
+.status-msg {
+  border-radius:14px; padding:14px; text-align:center;
+  font-family:'Black Han Sans',sans-serif; letter-spacing:0.05em;
+  font-size:1rem;
+  animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes popIn { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+.status-correct { background:rgba(45,198,83,0.2); border:1.5px solid var(--green); color:#7fffa0; }
+.status-wrong   { background:rgba(230,57,70,0.2); border:1.5px solid var(--red); color:#ffaaaa; }
+.status-timeout { background:rgba(249,115,22,0.2); border:1.5px solid #f97316; color:#ffcc88; }
+
+/* PROGRESS BAR */
+.progress-track { height:4px; background:rgba(255,255,255,0.1); border-radius:99px; overflow:hidden; }
+.progress-fill  { height:100%; background:linear-gradient(90deg,var(--purple),var(--gold)); border-radius:99px; transition:width 0.5s ease; }
+
+/* COUNTDOWN */
+#countNum {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:clamp(7rem,25vw,12rem); color:white; font-style:italic;
+  text-shadow: 6px 6px 0 var(--gold), 0 0 40px rgba(245,197,24,0.4);
+  animation: cdAnim 0.9s ease-out infinite;
+}
+@keyframes cdAnim { 0%{transform:scale(0.4);opacity:0} 55%{transform:scale(1.08);opacity:1} 100%{transform:scale(1);opacity:0.3} }
+
+/* STREAK BADGE */
+.streak-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(245,197,24,0.15); border:1px solid rgba(245,197,24,0.3);
+  border-radius:99px; padding:3px 10px;
+  font-size:0.75rem; font-weight:800; color:var(--gold);
+}
+
+/* AVATAR */
+.avatar {
+  width:48px; height:48px; border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),#9b6dff);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Black Han Sans',sans-serif; font-size:1.2rem;
+  border:2px solid rgba(245,197,24,0.4);
+  flex-shrink:0;
+}
+
+/* FINISH */
+.score-ring-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+.score-ring-wrap svg { transform:rotate(-90deg); }
+.score-center {
+  position:absolute; text-align:center;
+  font-family:'Black Han Sans',sans-serif;
+}
+
+/* STANDBY */
+.wave-dot {
+  width:8px; height:8px; border-radius:50%; background:var(--gold);
+  animation:waveDot 1.4s ease-in-out infinite;
+}
+.wave-dot:nth-child(2){animation-delay:0.2s}
+.wave-dot:nth-child(3){animation-delay:0.4s}
+@keyframes waveDot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-10px)}}
+
+/* VERSE */
+.verse-card {
+  background:rgba(245,197,24,0.08);
+  border-left:3px solid var(--gold);
+  border-radius:0 12px 12px 0;
+  padding:12px 14px;
+  font-style:italic; font-size:0.85rem;
+  color:rgba(255,255,255,0.7); line-height:1.6;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN VIEW ═══ -->
+<div id="loginView" class="card">
+  <div class="top-strip"></div>
+  <div class="card-inner flex flex-col gap-5">
+    <div class="text-center">
+      <span class="logo-cross">✝</span>
+      <h1 class="font-title text-xl leading-tight" style="color:var(--gold)">NEWDOWN KUIS<br>FPK KEMAHKRIS<br>INSTIKI 2026</h1>
+      <p class="text-white/40 text-xs mt-1">oleh sie acara</p>
+    </div>
+    <div>
+      <label class="text-white/60 text-xs uppercase tracking-widest font-bold block mb-2">Siapa namamu?</label>
+      <input type="text" id="nameInput" class="name-input" placeholder="KETIK NAMAMU..." maxlength="20">
+    </div>
+    <button id="joinBtn" class="btn btn-gold" onclick="doJoin()">⚡ GAS MASUK!</button>
+    <p class="text-center text-white/30 text-xs italic">Tunggu Host memulai kuis setelah bergabung 🙏</p>
+  </div>
+</div>
+
+<!-- ═══ LOBBY VIEW ═══ -->
+<div id="lobbyView" class="card hidden">
+  <div class="top-strip"></div>
+  <div class="card-inner flex flex-col gap-5 text-center">
+    <div class="flex items-center gap-3">
+      <div class="avatar" id="lobbyAvatar">?</div>
+      <div class="text-left">
+        <div class="font-title text-xl text-white" id="lobbyName">HALO!</div>
+        <div class="text-white/40 text-xs">Sudah terdaftar ✓</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:16px;padding:16px;">
+      <p class="text-white/70 text-sm leading-relaxed">
+        Tunggu <span style="color:var(--gold);font-weight:800">Host</span> memulai kuis.<br>
+        Jangan tutup halaman ini ya! 
+      </p>
+    </div>
+    <div class="flex justify-center gap-3">
+      <div class="wave-dot"></div><div class="wave-dot"></div><div class="wave-dot"></div>
+    </div>
+    <p class="text-white/30 text-xs italic">STAND BY...</p>
+  </div>
+</div>
+
+<!-- ═══ COUNTDOWN VIEW ═══ -->
+<div id="countView" class="hidden flex flex-col items-center gap-3">
+  <p class="font-title text-white/50 text-lg tracking-widest">BERSIAP!</p>
+  <div id="countNum">3</div>
+</div>
+
+<!-- ═══ QUIZ VIEW ═══ -->
+<div id="quizView" class="card hidden">
+  <div class="top-strip"></div>
+  <div class="card-inner flex flex-col gap-4">
+
+    <!-- Header row -->
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="font-title text-xs" style="color:var(--gold)" id="soalLabel">SOAL #1</div>
+        <div class="progress-track mt-1" style="width:80px">
+          <div class="progress-fill" id="progressFill" style="width:10%"></div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div id="streakBadge" class="streak-badge hidden">🔥 <span id="streakVal">0</span></div>
+        <div class="timer-box" id="timerBox">30</div>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <p class="text-white font-bold text-sm leading-snug" id="qText">...</p>
+
+    <!-- Image + Puzzle (for text-type questions) -->
+    <div id="imageArea" class="hidden">
+      <div class="image-box">
+        <img id="quizImg" src="" alt="">
+        <div id="puzzleOverlay" class="puzzle-overlay"></div>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <span class="text-white/40 text-xs">Ketuk kotak untuk membuka</span>
+        <span style="color:var(--gold)" class="text-xs font-bold">Sisa: <span id="clickLeft">15</span></span>
+      </div>
+      <div class="click-bar" id="clickBar"></div>
+    </div>
+
+    <!-- Input mode (text answer) -->
+    <div id="inputMode" class="hidden flex flex-col gap-3">
+      <input type="text" id="answerInput" class="name-input" placeholder="KETIK JAWABAN..." style="font-size:0.95rem">
+      <button id="submitBtn" class="btn btn-gold" onclick="doSubmit()">CEK JAWABAN ✓</button>
+    </div>
+
+    <!-- Choice mode -->
+    <div id="choiceMode" class="hidden flex flex-col gap-2">
+      <button class="choice-btn" id="btnA" onclick="doChoice('A')">A. <span id="optA"></span></button>
+      <button class="choice-btn" id="btnB" onclick="doChoice('B')">B. <span id="optB"></span></button>
+      <button class="choice-btn" id="btnC" onclick="doChoice('C')">C. <span id="optC"></span></button>
+      <button class="choice-btn" id="btnD" onclick="doChoice('D')">D. <span id="optD"></span></button>
+    </div>
+
+    <!-- Status -->
+    <div id="statusMsg" class="status-msg hidden"></div>
+
+    <!-- Score preview -->
+    <div id="scorePreview" class="hidden flex items-center justify-between text-xs text-white/50 px-1">
+      <span>Benar: <span id="benarCount" class="text-green-400 font-bold">0</span></span>
+      <span>Skor: <span id="scoreCount" style="color:var(--gold)" class="font-bold">0</span> pts</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAUSED VIEW ═══ -->
+<div id="pausedView" class="card hidden">
+  <div class="top-strip"></div>
+  <div class="card-inner text-center flex flex-col gap-4">
+    <div class="text-4xl">⏸</div>
+    <div class="font-title text-xl text-white">KUIS DIJEDA</div>
+    <p class="text-white/50 text-sm">Tunggu host melanjutkan...</p>
+    <div class="flex justify-center gap-3">
+      <div class="wave-dot"></div><div class="wave-dot"></div><div class="wave-dot"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FINISH VIEW ═══ -->
+<div id="finishView" class="card hidden">
+  <div class="top-strip"></div>
+  <div class="card-inner flex flex-col gap-5">
+    <div class="text-center">
+      <div class="text-4xl mb-2">🎉</div>
+      <h2 class="font-title text-xl text-white leading-tight">NEWDOWN KUIS<br>FPK KEMAHKRIS<br>INSTIKI 2026</h2>
+      <p class="text-white/40 text-xs mt-1 italic">KUIS SELESAI!</p>
+    </div>
+
+    <!-- Score ring -->
+    <div class="text-center">
+      <div class="score-ring-wrap mx-auto" style="width:140px;height:140px">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+          <circle id="scoreArc" cx="70" cy="70" r="60" fill="none"
+            stroke="var(--gold)" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="377" stroke-dashoffset="377"
+            style="transition:stroke-dashoffset 1.5s cubic-bezier(0.34,1.56,0.64,1) 0.3s"/>
+        </svg>
+        <div class="score-center">
+          <div class="font-title text-3xl" style="color:var(--gold)" id="finalRatio">0/10</div>
+          <div class="text-white/40 text-xs">Benar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <div class="font-title text-xl text-white/60">Skor Kamu</div>
+      <div class="font-title text-4xl" style="color:var(--gold)" id="finalPts">0</div>
+      <div class="text-white/30 text-xs">poin</div>
+    </div>
+
+    <!-- Podium Juara -->
+    <div id="podiumSection" class="hidden">
+      <div class="font-title text-sm text-center mb-3" style="color:var(--gold)">🏆 JUARA</div>
+      <div id="podiumList" class="flex flex-col gap-2"></div>
+    </div>
+
+    <p class="text-center text-white/30 text-xs italic">Tunggu pengumuman dari Kak Vicky! 🙏</p>
+  </div>
+</div>
+
+<!-- ═══ FIREBASE + LOGIC ═══ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA3jn9pp1gg_98AuDRGmCIQaUQVzbNKkCY",
+  databaseURL: "https://kuis-fpk-kemahkris-default-rtdb.asia-southeast1.firebasedatabase.app/"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ─── SOUNDS ───
+const SFX = {
+  correct: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_bb6300843e.mp3'),
+  wrong:   new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_c3523a58c2.mp3'),
+  tick:    new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+  reveal:  new Audio('https://cdn.pixabay.com/audio/2022/01/18/audio_8b52b56f71.mp3'),
+  join:    new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_165686008b.mp3')
+};
+const bgMusic = new Audio('https://cdn.pixabay.com/audio/2022/10/16/audio_12b6b9b0ad.mp3');
+bgMusic.loop = true; bgMusic.volume = 0.2;
+const playFX = s => { s.currentTime=0; s.play().catch(()=>{}); };
+
+// ─── STATE ───
+let myId = '', myName = '';
+let bankSoal = [];          // diambil dari Firebase (dikirim host)
+let currentLocalIdx = 0;   // index sinkron dengan host
+let correctCount = 0;
+let totalPoints  = 0;
+let answered     = false;
+let clickLimit   = 5;
+let hostStarted  = false;
+let wasInQuiz    = false;
+
+// ─── JOIN ───
+window.doJoin = async () => {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return alert('Isi nama dulu!');
+
+  const btn = document.getElementById('joinBtn');
+  btn.textContent = 'Masuk...'; btn.disabled = true;
+
+  try {
+    myName = name.toUpperCase();
+    const newRef = push(ref(db,'peserta'));
+    myId = newRef.key;
+    await set(newRef, { nama:myName, points:0, benar:0, status:'online' });
+    onDisconnect(newRef).remove();
+
+    playFX(SFX.join);
+    bgMusic.play().catch(()=>{});
+
+    showView('lobbyView');
+    document.getElementById('lobbyName').textContent = `HALO, ${myName}!`;
+    document.getElementById('lobbyAvatar').textContent = myName[0];
+    listenFirebase();
+
+  } catch(e) {
+    alert('Gagal konek, coba lagi!');
+    btn.textContent = '⚡ GAS MASUK!'; btn.disabled = false;
+  }
+};
+
+// ─── FIREBASE LISTENERS ───
+function listenFirebase() {
+  // Cek kalau kena kick / reset dari host
+  onValue(ref(db, `peserta/${myId}`), snap => {
+    if (!snap.exists() && myId !== '') {
+      myId = '';
+      document.getElementById('nameInput').value = '';
+      const btn = document.getElementById('joinBtn');
+      btn.textContent = '⚡ GAS MASUK!';
+      btn.disabled = false;
+      showView('loginView');
+    }
+  });
+
+  // Game state
+  onValue(ref(db,'gameState'), snap => {
+    const s = snap.val();
+    if (!s) return;
+
+    if (s.puzzleRevealed && wasInQuiz) {
+      const p = document.querySelectorAll('.puzzle-piece');
+      s.puzzleRevealed.forEach(idx => {
+        if (p[idx] && !p[idx].classList.contains('revealed')) {
+          p[idx].classList.add('revealed');
+        }
+      });
+    }
+
+    if (s.status === 'lobby') {
+      hostStarted = false; wasInQuiz = false;
+      if (myId !== '') showView('lobbyView');
+    }
+    else if (s.status === 'countdown') {
+      showView('countView');
+      document.getElementById('countNum').textContent = s.count;
+      if (s.count === 3 || s.count === '3') hostStarted = true;
+    }
+    else if (s.status === 'start') {
+      if (!hostStarted) { showView('lobbyView'); return; }
+      // Ambil bank soal dari Firebase jika belum ada
+      if (bankSoal.length === 0) {
+        get(ref(db,'bankSoal')).then(bSnap => {
+          if (bSnap.exists()) {
+            bankSoal = bSnap.val();
+            currentLocalIdx = s.qIdx !== undefined ? s.qIdx : 0;
+            correctCount = 0; totalPoints = 0;
+            answered = false;
+            showView('quizView');
+            setupSoal(currentLocalIdx);
+            wasInQuiz = true;
+          }
+        });
+      } else if (wasInQuiz) {
+        if (s.qIdx !== undefined && s.qIdx !== currentLocalIdx) {
+          currentLocalIdx = s.qIdx;
+          setupSoal(currentLocalIdx);
+        }
+      }
+    }
+    else if (s.status === 'paused') {
+      if (wasInQuiz) showView('pausedView');
+    }
+    else if (s.status === 'finish') {
+      showFinish();
+    }
+  });
+
+  // Timer — dari host
+  onValue(ref(db,'timer'), snap => {
+    if (!snap.exists()) return;
+    const t = parseInt(snap.val());
+    const box = document.getElementById('timerBox');
+    box.textContent = String(t).padStart(2,'0');
+    box.className = 'timer-box' + (t<=5?' danger':t<=10?' warning':'');
+
+    // Auto-timeout
+    if (t === 0 && !answered && !document.getElementById('quizView').classList.contains('hidden')) {
+      doAnswer('__TIMEOUT__');
+    }
+  });
+}
+
+// (Removed shuffleArray)
+// ─── SETUP SOAL ───
+function setupSoal(localIdx) {
+  answered = false;
+  const soal    = bankSoal[localIdx];
+
+  document.getElementById('soalLabel').textContent = `SOAL #${localIdx+1}`;
+  document.getElementById('progressFill').style.width = `${((localIdx+1)/bankSoal.length)*100}%`;
+  document.getElementById('qText').textContent = soal.q;
+  document.getElementById('statusMsg').classList.add('hidden');
+  document.getElementById('scorePreview').classList.remove('hidden');
+  document.getElementById('benarCount').textContent = correctCount;
+  document.getElementById('scoreCount').textContent  = totalPoints;
+
+  // Reset inputs
+  document.getElementById('answerInput').value = '';
+  document.getElementById('answerInput').disabled = false;
+  document.getElementById('submitBtn').disabled = false;
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = false;
+    b.classList.remove('correct','wrong');
+  });
+
+  // Image / Puzzle
+  if (soal.img) {
+    document.getElementById('quizImg').src = soal.img;
+    document.getElementById('imageArea').classList.remove('hidden');
+    buildPuzzle();
+  } else {
+    document.getElementById('imageArea').classList.add('hidden');
+  }
+
+  // Mode
+  if (soal.type === 'text') {
+    document.getElementById('inputMode').classList.remove('hidden');
+    document.getElementById('choiceMode').classList.add('hidden');
+  } else {
+    document.getElementById('inputMode').classList.add('hidden');
+    document.getElementById('choiceMode').classList.remove('hidden');
+    ['A','B','C','D'].forEach((l,i) => {
+      document.getElementById('opt'+l).textContent = soal.opts[i];
+    });
+  }
+
+  // Body reset
+  document.body.className = '';
+}
+
+// ─── PUZZLE ───
+function buildPuzzle() {
+  const overlay = document.getElementById('puzzleOverlay');
+  overlay.innerHTML = '';
+  clickLimit = 5;
+  document.getElementById('clickLeft').textContent = 5;
+
+  // Pip bar - 5 pip
+  const bar = document.getElementById('clickBar');
+  bar.innerHTML = Array.from({length:5},(_,i) =>
+    `<div class="click-pip" id="pip${i}"></div>`
+  ).join('');
+
+  for (let i=0;i<16;i++) {
+    const p = document.createElement('div');
+    p.className = 'puzzle-piece';
+    p.onclick = () => {
+      if (p.classList.contains('revealed') || answered || clickLimit<=0) return;
+      p.classList.add('revealed');
+      clickLimit--;
+      document.getElementById('clickLeft').textContent = clickLimit;
+      const pip = document.getElementById(`pip${clickLimit}`);
+      if (pip) pip.classList.add('used');
+      playFX(SFX.reveal);
+    };
+    overlay.appendChild(p);
+  }
+}
+
+// ─── SUBMIT TEXT ───
+window.doSubmit = () => {
+  const val = document.getElementById('answerInput').value.toUpperCase().trim();
+  if (!val) { alert('Isi jawaban dulu!'); return; }
+  doAnswer(val);
+};
+
+window.doChoice = (letter) => doAnswer(letter);
+
+// ─── FUZZY MATCH ───
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => j===0?i:0));
+  for (let j=1;j<=n;j++) dp[0][j]=j;
+  for (let i=1;i<=m;i++) for (let j=1;j<=n;j++) {
+    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  }
+  return dp[m][n];
+}
+
+function checkTextAnswer(val, answer) {
+  // Exact match
+  if (val === answer) return 'exact';
+  // Normalize: check if contains the key word(s)
+  const ansWords = answer.split(' ');
+  const valClean = val.replace(/[^A-Z0-9 ]/g,'');
+  const ansClean = answer.replace(/[^A-Z0-9 ]/g,'');
+  // If any main word matches
+  const mainWord = ansWords[ansWords.length-1]; // last word = usually surname/key word
+  if (val.includes(mainWord) || mainWord.includes(val)) return 'close';
+  // Levenshtein: if distance ≤ 40% of answer length → close
+  const dist = levenshtein(valClean, ansClean);
+  const threshold = Math.ceil(ansClean.length * 0.4);
+  if (dist <= threshold) return 'close';
+  return 'wrong';
+}
+
+// ─── CHECK ANSWER ───
+async function doAnswer(val) {
+  if (answered) return;
+  answered = true;
+
+  const soal    = bankSoal[currentLocalIdx];
+  const isTimeout = val === '__TIMEOUT__';
+
+  // Disable inputs
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('answerInput').disabled = true;
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+  // Visual feedback on choice buttons
+  if (soal.type === 'choice') {
+    const labels = ['A','B','C','D'];
+    labels.forEach(l => {
+      const btn = document.getElementById('btn'+l);
+      if (l === soal.n) btn.classList.add('correct');
+      else if (l === val && val !== soal.n) btn.classList.add('wrong');
+    });
+  }
+
+  // Status message
+  const msg = document.getElementById('statusMsg');
+  msg.classList.remove('hidden','status-correct','status-wrong','status-timeout');
+
+  let pointsEarned = 0;
+
+  if (isTimeout) {
+    playFX(SFX.wrong);
+    msg.textContent = '⏰ WAKTU HABIS! Jawaban: ' + soal.n;
+    msg.classList.add('status-timeout');
+    document.body.className = 'state-wrong';
+
+  } else if (soal.type === 'text') {
+    // Fuzzy check untuk soal teks
+    const result = checkTextAnswer(val, soal.n);
+    if (result === 'exact') {
+      playFX(SFX.correct);
+      pointsEarned = 10;
+      correctCount++;
+      totalPoints += 10;
+      msg.textContent = '✅ BENAR! +10 POIN 🎉';
+      msg.classList.add('status-correct');
+      document.body.className = 'state-correct';
+      confetti({ particleCount:120, spread:70, origin:{y:0.6} });
+      document.querySelectorAll('.puzzle-piece:not(.revealed)').forEach((p,i) => {
+        setTimeout(() => p.classList.add('revealed'), i*30);
+      });
+    } else if (result === 'close') {
+      playFX(SFX.correct);
+      pointsEarned = 5;
+      totalPoints += 5;
+      msg.innerHTML = '🟡 MENDEKATI BENAR! +5 POIN<br><small style="font-size:0.8rem;opacity:0.8">Jawaban: ' + soal.n + '</small>';
+      msg.classList.add('status-timeout');
+      document.body.className = 'state-correct';
+    } else {
+      playFX(SFX.wrong);
+      msg.textContent = `❌ SALAH! Jawaban: ${soal.n}`;
+      msg.classList.add('status-wrong');
+      document.body.className = 'state-wrong';
+    }
+
+  } else {
+    // Choice
+    const isCorrect = val === soal.n;
+    if (isCorrect) {
+      playFX(SFX.correct);
+      pointsEarned = 10;
+      correctCount++;
+      totalPoints += 10;
+      msg.textContent = '✅ BENAR! +10 POIN 🎉';
+      msg.classList.add('status-correct');
+      document.body.className = 'state-correct';
+      confetti({ particleCount:120, spread:70, origin:{y:0.6} });
+      document.querySelectorAll('.puzzle-piece:not(.revealed)').forEach((p,i) => {
+        setTimeout(() => p.classList.add('revealed'), i*30);
+      });
+    } else {
+      playFX(SFX.wrong);
+      msg.textContent = `❌ SALAH! Jawaban: ${soal.n}`;
+      msg.classList.add('status-wrong');
+      document.body.className = 'state-wrong';
+    }
+  }
+
+  document.getElementById('benarCount').textContent = correctCount;
+  document.getElementById('scoreCount').textContent  = totalPoints;
+
+  // Simpan ke Firebase jika ada poin
+  if (pointsEarned > 0) {
+    const snap = await get(ref(db,`peserta/${myId}`));
+    const cur  = snap.exists() ? (snap.val().points||0) : 0;
+    const curBenar = snap.exists() ? (snap.val().benar||0) : 0;
+    update(ref(db,`peserta/${myId}`), {
+      points: cur + pointsEarned,
+      benar: pointsEarned === 10 ? curBenar + 1 : curBenar
+    });
+  }
+
+  // Reset body color after 1.2s
+  setTimeout(() => { document.body.className = ''; }, 1200);
+}
+
+// ─── FINISH ───
+async function showFinish() {
+  showView('finishView');
+  const ratio = `${correctCount}/${bankSoal.length||10}`;
+  document.getElementById('finalRatio').textContent = ratio;
+  document.getElementById('finalPts').textContent   = totalPoints;
+
+  // Animate score arc
+  const pct = bankSoal.length ? correctCount/bankSoal.length : 0;
+  setTimeout(() => {
+    document.getElementById('scoreArc').style.strokeDashoffset = 377*(1-pct);
+  }, 100);
+
+  confetti({ particleCount:150, spread:90, origin:{y:0.5} });
+
+  // Ambil data juara dari Firebase
+  try {
+    const snap = await get(ref(db,'peserta'));
+    if (snap.exists()) {
+      const players = Object.values(snap.val()).sort((a,b)=>(b.points||0)-(a.points||0));
+      const top3 = players.slice(0,3);
+      const medals = ['🥇','🥈','🥉'];
+      const colors = ['var(--gold)','#9ca3af','#cd7f32'];
+      const podiumList = document.getElementById('podiumList');
+      podiumList.innerHTML = top3.map((p,i) => `
+        <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.07);padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+          <span style="font-size:1.4rem">${medals[i]}</span>
+          <span class="font-title text-white flex-1" style="font-size:1rem">${p.nama}</span>
+          <span class="font-title" style="color:${colors[i]};font-size:1rem">${p.points||0} pts</span>
+        </div>
+      `).join('');
+      document.getElementById('podiumSection').classList.remove('hidden');
+    }
+  } catch(e) { /* ignore */ }
+}
+
+// ─── VIEW HELPER ───
+function showView(id) {
+  ['loginView','lobbyView','countView','quizView','pausedView','finishView']
+    .forEach(v => document.getElementById(v).classList.toggle('hidden', v!==id));
+}
+</script>
+</body>
+</html>

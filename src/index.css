@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #f5c518;
+  --gold2: #e8a500;
+  --purple: #6c3fc5;
+  --red: #e63946;
+  --green: #2dc653;
+  --dark: #0d0d20;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans', sans-serif;
+  background: var(--dark);
+  color: white;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+
+/* === QUIZ CARD (Peserta) === */
+.quiz-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+}
+
+/* === TOP STRIP === */
+.top-strip {
+  height: 4px;
+  background: linear-gradient(90deg, var(--purple), var(--gold), var(--purple));
+  background-size: 200% 100%;
+  animation: stripFlow 3s linear infinite;
+}
+
+/* === DASHBOARD CARD === */
+.dash-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+}
+
+/* === BUTTONS === */
+.btn {
+  font-family: 'Black Han Sans', sans-serif;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(0.97); }
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #0a0a1a;
+  box-shadow: 0 8px 0 rgba(180, 120, 0, 0.5), 0 12px 20px rgba(245, 197, 24, 0.25);
+}
+.btn-gold:active { box-shadow: 0 3px 0 rgba(180, 120, 0, 0.5); transform: translateY(3px) scale(0.97); }
+
+.btn-purple { background: linear-gradient(135deg, #6c3fc5, #9b6dff); color: white; box-shadow: 0 6px 20px rgba(108, 63, 197, 0.4); }
+.btn-red    { background: linear-gradient(135deg, #e63946, #c1121f); color: white; box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4); }
+.btn-green  { background: linear-gradient(135deg, #2dc653, #1a9e3f); color: white; box-shadow: 0 6px 20px rgba(45, 198, 83, 0.4); }
+.btn-gray   { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+/* === INPUT === */
+.quiz-input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  text-transform: uppercase;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.quiz-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.2);
+}
+.quiz-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+/* === TIMER BOX (Peserta) === */
+.timer-box {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-family: monospace;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--gold);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+  transition: color 0.3s, box-shadow 0.3s;
+}
+.timer-box.warning { color: #f97316; box-shadow: inset 0 0 12px rgba(249, 115, 22, 0.3), 0 0 20px rgba(249, 115, 22, 0.2); }
+.timer-box.danger  { color: var(--red); box-shadow: inset 0 0 12px rgba(230, 57, 70, 0.3), 0 0 20px rgba(230, 57, 70, 0.2); animation: timerShake 0.3s ease infinite; }
+
+/* === PUZZLE === */
+.puzzle-piece {
+  background: rgba(13, 13, 32, 0.92);
+  border: 0.5px solid rgba(108, 63, 197, 0.25);
+  cursor: pointer;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.puzzle-piece:hover:not(.revealed) { background: rgba(108, 63, 197, 0.6); }
+.puzzle-piece.revealed { opacity: 0; transform: scale(0.3) rotate(20deg); pointer-events: none; }
+
+/* === CHOICE BUTTONS === */
+.choice-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  color: white;
+  padding: 14px 16px;
+  text-align: left;
+  font-family: 'Noto Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+.choice-btn:hover:not(:disabled) { background: rgba(108, 63, 197, 0.3); border-color: rgba(108, 63, 197, 0.6); transform: translateX(4px); }
+.choice-btn:disabled { opacity: 0.6; cursor: default; transform: none !important; }
+.choice-btn.correct { background: rgba(45, 198, 83, 0.2); border-color: var(--green); color: #7fffa0; }
+.choice-btn.wrong   { background: rgba(230, 57, 70, 0.2); border-color: var(--red); color: #ffaaaa; }
+
+/* === STATUS MSG === */
+.status-msg {
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  font-family: 'Black Han Sans', sans-serif;
+  letter-spacing: 0.05em;
+  font-size: 1rem;
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.status-correct { background: rgba(45, 198, 83, 0.2); border: 1.5px solid var(--green); color: #7fffa0; }
+.status-wrong   { background: rgba(230, 57, 70, 0.2); border: 1.5px solid var(--red); color: #ffaaaa; }
+.status-timeout { background: rgba(249, 115, 22, 0.2); border: 1.5px solid #f97316; color: #ffcc88; }
+
+/* === PROGRESS === */
+.progress-track { height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 99px; overflow: hidden; }
+.progress-fill  { height: 100%; background: linear-gradient(90deg, var(--purple), var(--gold)); border-radius: 99px; transition: width 0.5s ease; }
+
+/* === CHIP === */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.chip-yellow { background: rgba(245, 197, 24, 0.15); color: var(--gold); border: 1px solid rgba(245, 197, 24, 0.3); }
+
+/* === LEADERBOARD ROW === */
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.lb-row:nth-child(1) { background: rgba(245, 197, 24, 0.12); border-color: rgba(245, 197, 24, 0.3); }
+.lb-row:nth-child(2) { background: rgba(192, 192, 192, 0.1); border-color: rgba(192, 192, 192, 0.25); }
+.lb-row:nth-child(3) { background: rgba(205, 127, 50, 0.1); border-color: rgba(205, 127, 50, 0.25); }
+
+/* === MUSIC BAR === */
+.music-bar {
+  width: 3px;
+  background: var(--gold);
+  border-radius: 2px;
+  animation: musicBar 0.8s ease infinite alternate;
+}
+.music-bar:nth-child(2) { animation-delay: 0.2s; }
+.music-bar:nth-child(3) { animation-delay: 0.4s; }
+.music-bar:nth-child(4) { animation-delay: 0.1s; }
+
+/* === CHOICE ITEM (DASHBOARD) === */
+.choice-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* === RESULT BADGE (DASHBOARD) === */
+.result-badge {
+  border-radius: 14px;
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  font-family: 'Black Han Sans', sans-serif;
+  letter-spacing: 0.05em;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  text-align: center;
+}
+
+/* === PLAYER CARD === */
+.player-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.4s ease both;
+}
+
+/* === KEYFRAMES === */
+@keyframes stripFlow { 0% { background-position: 0%; } 100% { background-position: 200%; } }
+@keyframes floatCross { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes waveDot { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
+@keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes cdAnim { 0% { transform: scale(0.4); opacity: 0; } 55% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 0.3; } }
+@keyframes pulseDot { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.6; } }
+@keyframes musicBar { from { height: 4px; } to { height: 14px; } }
+@keyframes timerShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }

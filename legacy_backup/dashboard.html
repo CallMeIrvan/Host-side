@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEWDOWN KUIS · Dashboard Host</title>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans:wght@400;700;900&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --gold: #f5c518;
+      --gold2: #e8a500;
+      --dark: #0a0a1a;
+      --deep: #10102a;
+      --purple: #6c3fc5;
+      --red: #e63946;
+      --green: #2dc653;
+      --card: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans', sans-serif;
+      background: var(--dark);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ANIMATED BG */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, rgba(108, 63, 197, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245, 197, 24, 0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* FONT TITLE */
+    .font-title {
+      font-family: 'Black Han Sans', sans-serif;
+    }
+
+    /* GLOW */
+    .glow-gold {
+      text-shadow: 0 0 20px rgba(245, 197, 24, 0.6), 0 0 40px rgba(245, 197, 24, 0.3);
+    }
+
+    .glow-purple {
+      box-shadow: 0 0 30px rgba(108, 63, 197, 0.5);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+    }
+
+    /* PULSE DOT */
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulseDot 1.5s ease infinite;
+    }
+
+    @keyframes pulseDot {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1
+      }
+
+      50% {
+        transform: scale(1.5);
+        opacity: 0.6
+      }
+    }
+
+    /* TIMER */
+    .timer-ring {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timer-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring .val {
+      position: absolute;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 2.8rem;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(245, 197, 24, 0.5);
+    }
+
+    /* PUZZLE GRID */
+    .puzzle-wrapper {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .puzzle-wrapper img {
+      width: 100%;
+      display: block;
+      border-radius: 14px;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      background: #1a1a3a;
+    }
+
+    .puzzle-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 2px;
+    }
+
+    .puzzle-piece {
+      background: rgba(16, 16, 42, 0.92);
+      border: 0.5px solid rgba(108, 63, 197, 0.3);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .puzzle-piece.revealed {
+      opacity: 0;
+      transform: scale(0.4) rotate(20deg);
+      pointer-events: none;
+    }
+
+    /* PLAYER CARD */
+    .player-card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.4s ease both;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    /* LEADERBOARD ROW */
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .lb-row:nth-child(1) {
+      background: rgba(245, 197, 24, 0.12);
+      border-color: rgba(245, 197, 24, 0.3);
+    }
+
+    .lb-row:nth-child(2) {
+      background: rgba(192, 192, 192, 0.1);
+      border-color: rgba(192, 192, 192, 0.25);
+    }
+
+    .lb-row:nth-child(3) {
+      background: rgba(205, 127, 50, 0.1);
+      border-color: rgba(205, 127, 50, 0.25);
+    }
+
+    /* CHOICE GRID */
+    .choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .choice-item {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    /* BUTTONS */
+    .btn {
+      font-family: 'Black Han Sans', sans-serif;
+      letter-spacing: 0.05em;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 12px;
+      padding: 12px 24px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #0a0a1a;
+      box-shadow: 0 6px 20px rgba(245, 197, 24, 0.35);
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #6c3fc5, #9b6dff);
+      color: white;
+      box-shadow: 0 6px 20px rgba(108, 63, 197, 0.4);
+    }
+
+    .btn-red {
+      background: linear-gradient(135deg, #e63946, #c1121f);
+      color: white;
+      box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #2dc653, #1a9e3f);
+      color: white;
+      box-shadow: 0 6px 20px rgba(45, 198, 83, 0.4);
+    }
+
+    .btn-gray {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* RESULT BADGE */
+    .result-badge {
+      border-radius: 14px;
+      padding: 14px 20px;
+      font-size: 1.1rem;
+      font-family: 'Black Han Sans', sans-serif;
+      letter-spacing: 0.05em;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.7)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    /* COUNTDOWN */
+    #cdNum {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(8rem, 20vw, 14rem);
+      color: white;
+      font-style: italic;
+      text-shadow: 8px 8px 0 var(--gold), 0 0 60px rgba(245, 197, 24, 0.4);
+      animation: cdAnim 0.9s ease-out infinite;
+    }
+
+    @keyframes cdAnim {
+      0% {
+        transform: scale(0.3);
+        opacity: 0
+      }
+
+      60% {
+        transform: scale(1.1);
+        opacity: 1
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 0
+      }
+    }
+
+    /* STATUS CHIP */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .chip-green {
+      background: rgba(45, 198, 83, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(45, 198, 83, 0.3);
+    }
+
+    .chip-yellow {
+      background: rgba(245, 197, 24, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(245, 197, 24, 0.3);
+    }
+
+    .chip-red {
+      background: rgba(230, 57, 70, 0.15);
+      color: var(--red);
+      border: 1px solid rgba(230, 57, 70, 0.3);
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 99px;
+    }
+
+    /* REVEAL ALL animation */
+    @keyframes revealAll {
+      from {
+        opacity: 0.9;
+        transform: scale(1);
+      }
+
+      to {
+        opacity: 0;
+        transform: scale(0.3) rotate(15deg);
+      }
+    }
+
+    .reveal-all-anim {
+      animation: revealAll 0.5s ease forwards;
+    }
+
+    /* PODIUM */
+    .podium-item {
+      text-align: center;
+    }
+
+    .podium-bar {
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 10px;
+      transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .podium-label {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+
+    /* MUSIC INDICATOR */
+    .music-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .music-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 16px;
+    }
+
+    .music-bar {
+      width: 3px;
+      background: var(--gold);
+      border-radius: 2px;
+      animation: musicBar 0.8s ease infinite alternate;
+    }
+
+    .music-bar:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .music-bar:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    .music-bar:nth-child(4) {
+      animation-delay: 0.1s;
+    }
+
+    @keyframes musicBar {
+      from {
+        height: 4px
+      }
+
+      to {
+        height: 14px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════ LOBBY SCREEN ═══════════ -->
+  <div id="lobbyScreen" class="page min-h-screen flex flex-col p-6 gap-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="font-title text-3xl glow-gold leading-tight" style="color:var(--gold)">NEWDOWN KUIS<br>FPK KEMAHKRIS
+          INSTIKI 2026</h1>
+        <p class="text-sm text-white/50 mt-1">Dashboard · oleh sie acara</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="music-indicator" id="musicIndicator">
+          <div class="music-bars">
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+          </div>
+          <span id="musicLabel">Musik ON</span>
+        </div>
+        <button class="btn btn-gray text-sm px-3 py-2" onclick="toggleMusic()">🎵</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+      <!-- LEFT: Player list -->
+      <div class="lg:col-span-2 card p-6 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-title text-xl" style="color:var(--gold)">PESERTA TERDAFTAR</h2>
+          <div class="flex items-center gap-2">
+            <div class="pulse-dot"></div>
+            <span class="text-white/60 text-sm">Live · <span id="lobbyCount">0</span> orang</span>
+          </div>
+        </div>
+        <div id="playerGrid" class="grid grid-cols-3 gap-3 overflow-y-auto" style="max-height:380px">
+          <div class="text-white/30 text-sm italic col-span-3 text-center py-8">Menunggu peserta bergabung...</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Controls -->
+      <div class="flex flex-col gap-4">
+        <div class="card p-6 text-center">
+          <div class="text-5xl font-title mb-2" style="color:var(--gold)" id="bigCount">0</div>
+          <div class="text-white/50 text-sm uppercase tracking-widest">Peserta Siap</div>
+        </div>
+
+        <div class="card p-5 flex flex-col gap-3">
+          <div class="text-xs text-white/40 uppercase tracking-widest mb-1">Pengaturan Waktu</div>
+          <div class="flex items-center gap-2">
+            <span class="text-white/60 text-sm">Detik/soal:</span>
+            <input type="number" id="timerSetting" value="30" min="10" max="99"
+              class="w-16 bg-white/10 border border-white/20 rounded-lg text-center text-white font-bold p-2 outline-none focus:border-yellow-400">
+          </div>
+        </div>
+
+        <button id="startBtn" class="btn btn-gold text-lg py-4 w-full" onclick="startGame()">
+          ▶ MULAI KUIS
+        </button>
+        <button class="btn btn-red text-sm py-3 w-full" onclick="resetGame()">
+          🗑 RESET SEMUA DATA
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom: Live mini leaderboard -->
+    <div class="card p-5">
+      <h3 class="font-title text-sm mb-3" style="color:var(--gold)">LIVE LEADERBOARD</h3>
+      <div id="lobbyLeaderboard" class="flex gap-3 overflow-x-auto pb-1">
+        <div class="text-white/30 text-sm italic">Belum ada poin...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ COUNTDOWN SCREEN ═══════════ -->
+  <div id="countdownScreen" class="page hidden min-h-screen flex flex-col items-center justify-center gap-4">
+    <div class="text-white/50 font-title text-xl tracking-widest uppercase">Bersiap...</div>
+    <div id="cdNum">3</div>
+    <div class="text-white/40 text-sm">Semua peserta sudah terhubung</div>
+  </div>
+
+  <!-- ═══════════ QUIZ SCREEN ═══════════ -->
+  <div id="quizScreen" class="page hidden min-h-screen flex flex-col p-5 gap-4">
+
+    <!-- Top bar -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="chip chip-yellow">
+          <span id="qChip">SOAL 1/10</span>
+        </div>
+        <div class="music-indicator">
+          <div class="music-bars">
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+            <div class="music-bar"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="pauseBtn" class="btn btn-gray text-sm px-4 py-2" onclick="pauseGame()">⏸ PAUSE</button>
+        <button id="resumeBtn" class="btn btn-green text-sm px-4 py-2 hidden" onclick="resumeGame()">▶ LANJUT</button>
+        <button id="revealBtn" class="btn btn-purple text-sm px-4 py-2" onclick="revealAll()">👁 BUKA SEMUA</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 flex-1">
+
+      <!-- LEFT: Question + Puzzle -->
+      <div class="lg:col-span-2 flex flex-col gap-4">
+        <!-- Question card -->
+        <div class="card p-5">
+          <div class="text-white/40 text-xs uppercase tracking-widest mb-2">Pertanyaan</div>
+          <p class="text-white font-bold text-lg leading-snug" id="qText">...</p>
+          <!-- Choices display (for choice type) -->
+          <div id="choicesDisplay" class="choice-grid hidden"></div>
+        </div>
+
+        <!-- Puzzle image -->
+        <div class="card p-4 flex-1">
+          <div class="puzzle-wrapper">
+            <div id="imgPlaceholder"
+              style="width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#1a1a3a,#2d1b6b);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+              <span style="font-size:3rem">✝️</span>
+              <span style="color:rgba(255,255,255,0.3);font-size:0.8rem">Gambar soal</span>
+            </div>
+            <img id="quizImg" src="" alt=""
+              style="display:none;width:100%;border-radius:14px;aspect-ratio:4/3;object-fit:cover;">
+            <div id="puzzleOverlay" class="puzzle-overlay"></div>
+          </div>
+          <div class="flex justify-between items-center mt-3">
+            <span class="text-white/40 text-xs">Klik kotak untuk membuka (max 5)</span>
+            <span class="text-yellow-400 text-xs font-bold">Terbuka: <span id="openedCount">0</span>/16</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Timer + Leaderboard -->
+      <div class="flex flex-col gap-4">
+
+        <!-- Timer -->
+        <div class="card p-5 text-center">
+          <div class="text-white/40 text-xs uppercase tracking-widest mb-3">Sisa Waktu</div>
+          <div class="timer-ring mx-auto" style="width:120px;height:120px;">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+              <circle id="timerArc" cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="8"
+                stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="0"
+                style="transition:stroke-dashoffset 1s linear,stroke 0.3s" />
+            </svg>
+            <div class="val" id="timerVal">30</div>
+          </div>
+          <div class="flex gap-2 mt-4 justify-center">
+            <input type="number" id="editMin" value="00" min="0" max="59" style="width:48px"
+              class="bg-white/10 border border-white/20 rounded-lg text-center text-white font-bold py-1 outline-none text-sm">
+            <span class="text-white/40 font-bold self-center">:</span>
+            <input type="number" id="editSec" value="30" min="0" max="59" style="width:48px"
+              class="bg-white/10 border border-white/20 rounded-lg text-center text-white font-bold py-1 outline-none text-sm">
+          </div>
+        </div>
+
+        <!-- Live leaderboard -->
+        <div class="card p-4 flex-1 flex flex-col gap-2 overflow-y-auto">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-title text-sm" style="color:var(--gold)">LIVE SCORE</span>
+            <div class="pulse-dot"></div>
+          </div>
+          <div id="liveLeaderboard" class="flex flex-col gap-2"></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-col gap-2">
+          <div id="resultBadge" class="result-badge hidden text-center"></div>
+          <button id="nextBtn" class="btn btn-gold w-full hidden" onclick="nextQuestion()">SOAL BERIKUTNYA →</button>
+          <button id="finishBtn" class="btn btn-purple w-full hidden" onclick="finishGame()">🏆 LIHAT HASIL
+            AKHIR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FINISH SCREEN ═══════════ -->
+  <div id="finishScreen" class="page hidden min-h-screen flex flex-col items-center justify-center p-8 gap-8">
+    <div class="text-center">
+      <div class="font-title text-4xl glow-gold mb-2 leading-tight text-center" style="color:var(--gold)">NEWDOWN
+        KUIS<br>FPK KEMAHKRIS INSTIKI 2026</div>
+      <p class="text-white/50 text-center">oleh sie acara — Kuis Selesai!</p>
+    </div>
+
+    <!-- Podium -->
+    <div class="flex items-end justify-center gap-2 sm:gap-6 w-full max-w-lg" style="height:220px">
+      <div class="podium-item flex-1">
+        <div class="text-center mb-2">
+          <div class="text-2xl">🥈</div>
+          <div class="font-bold text-sm text-white/80" id="rank2name">—</div>
+          <div class="text-yellow-400 text-xs font-bold" id="rank2pts">0 pts</div>
+        </div>
+        <div class="podium-bar" id="pod2" style="height:120px;background:linear-gradient(180deg,#9ca3af,#6b7280)"></div>
+      </div>
+      <div class="podium-item flex-1">
+        <div class="text-center mb-2">
+          <div class="text-3xl">🥇</div>
+          <div class="font-bold text-base text-white" id="rank1name">—</div>
+          <div class="text-yellow-400 text-sm font-bold" id="rank1pts">0 pts</div>
+        </div>
+        <div class="podium-bar" id="pod1"
+          style="height:160px;background:linear-gradient(180deg,var(--gold),var(--gold2))"></div>
+      </div>
+      <div class="podium-item flex-1">
+        <div class="text-center mb-2">
+          <div class="text-xl">🥉</div>
+          <div class="font-bold text-sm text-white/70" id="rank3name">—</div>
+          <div class="text-yellow-400 text-xs font-bold" id="rank3pts">0 pts</div>
+        </div>
+        <div class="podium-bar" id="pod3" style="height:90px;background:linear-gradient(180deg,#cd7f32,#a0522d)"></div>
+      </div>
+    </div>
+
+    <!-- Full ranking -->
+    <div class="card p-4 sm:p-6 w-full max-w-lg">
+      <h3 class="font-title text-sm mb-4" style="color:var(--gold)">RANKING LENGKAP</h3>
+      <div id="fullRanking" class="flex flex-col gap-2 max-h-60 overflow-y-auto"></div>
+    </div>
+
+    <button class="btn btn-gold px-10 py-4 text-lg" onclick="backToLobby()">↩ KEMBALI KE LOBBY</button>
+  </div>
+
+  <!-- ═══════════ FIREBASE + LOGIC ═══════════ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, remove, get, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3jn9pp1gg_98AuDRGmCIQaUQVzbNKkCY",
+      databaseURL: "https://kuis-fpk-kemahkris-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ─── BANK SOAL (sumber kebenaran) ───
+    window.MASTER_SOAL = [
+      { q: "Nama tokoh Alkitab yang menulis surat Yakobus adalah?", n: "YAKOBUS", type: "text", img: "soal1.jpg", emoji: "📜" },
+      { q: "Siapa Paus yang mengeluarkan ensiklik Rerum Novarum?", n: "PAUS LEO XIII", type: "text", img: "soal2.jpg", emoji: "⛪" },
+      { q: "Siapa Tokoh Kemanusiaan dari Kalkuta ini?", n: "MOTHER TERESA", type: "text", img: "soal3.jpg", emoji: "🕊️" },
+      { q: "Gambar ini melambangkan tradisi doa apa?", n: "A", type: "choice", img: "soal4.jpg", emoji: "🙏", opts: ["Jalan Salib", "Misa", "Doa Rosario", "Ziarah"] },
+      { q: "Siapa penulis Injil yang dilambangkan dengan Manusia?", n: "D", type: "choice", img: "soal5.jpg", emoji: "📖", opts: ["Petrus", "Yohanes Pembaptis", "Lukas", "Matius"] },
+      { q: "Malaikat agung manakah pembawa kabar gembira?", n: "C", type: "choice", img: "soal6.jpg", emoji: "👼", opts: ["Rafael", "Mikhael", "Gabriel", "Uriel"] },
+      { q: "Siapakah nama Ibu dari St. Yohanes Pembaptis?", n: "B", type: "choice", img: "soal7.jpg", emoji: "👩", opts: ["Bunda Maria", "Elisabeth", "Magdalena", "Marta"] },
+      { q: "Pemimpin gereja Katolik di Keuskupan Bali disebut?", n: "D", type: "choice", img: "soal8.jpg", emoji: "🏛️", opts: ["Uskup Bogor", "Uskup Agung Jakarta", "Uskup Larantuka", "Uskup Agung Denpasar"] },
+      { q: "Calon imam yang sedang menjalani pendidikan disebut?", n: "A", type: "choice", img: "soal9.jpg", emoji: "👨‍🎓", opts: ["Frater", "Romo", "Diakon", "Suster"] },
+      { q: "Siapakah Bapak segala orang beriman?", n: "A", type: "choice", img: "soal10.jpg", emoji: "⭐", opts: ["Abraham", "Ishak", "Musa", "Daud"] }
+    ];
+
+    // ─── SOUNDS ───
+    const SFX = {
+      correct: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_bb6300843e.mp3'),
+      wrong: new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_c3523a58c2.mp3'),
+      start: new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_165686008b.mp3'),
+      tick: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+      finish: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+      reveal: new Audio('https://cdn.pixabay.com/audio/2022/01/18/audio_8b52b56f71.mp3')
+    };
+    let musicOn = true;
+    const bgMusic = new Audio('https://cdn.pixabay.com/audio/2022/10/16/audio_12b6b9b0ad.mp3');
+    bgMusic.loop = true; bgMusic.volume = 0.25;
+
+    const playFX = (s) => { if (!musicOn) return; s.currentTime = 0; s.play().catch(() => { }); };
+
+    window.toggleMusic = () => {
+      musicOn = !musicOn;
+      document.getElementById('musicLabel').textContent = musicOn ? 'Musik ON' : 'Musik OFF';
+      if (musicOn) bgMusic.play().catch(() => { });
+      else bgMusic.pause();
+    };
+
+    // ─── STATE ───
+    let currentIdx = 0;
+    let timeLeft = 30;
+    let maxTime = 30;
+    let isPaused = true;
+    let timerInterval = null;
+    let openedPieces = 0;
+    let answered = false;
+    let revealedPieces = [];
+
+    // ─── TIMER LOGIC ───
+    function startTimer() {
+      clearInterval(timerInterval);
+      isPaused = false;
+      timerInterval = setInterval(() => {
+        if (isPaused) return;
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateTimerUI();
+          // ✅ SYNC ke Firebase — dibaca oleh semua peserta di HP
+          set(ref(db, 'timer'), timeLeft);
+          if (timeLeft <= 5) playFX(SFX.tick);
+        } else {
+          clearInterval(timerInterval);
+          isPaused = true;
+          playFX(SFX.wrong);
+          showResult("⏰ WAKTU HABIS!", "bg-orange-600");
+          set(ref(db, 'timer'), 0);
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      document.getElementById('timerVal').textContent = timeLeft;
+      const arc = document.getElementById('timerArc');
+      const pct = timeLeft / maxTime;
+      arc.style.strokeDashoffset = 327 * (1 - pct);
+      arc.style.stroke = timeLeft <= 5 ? '#e63946' : timeLeft <= 10 ? '#f97316' : 'var(--gold)';
+      document.getElementById('editSec').value = String(timeLeft % 60).padStart(2, '0');
+      document.getElementById('editMin').value = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+    }
+
+    window.pauseGame = () => {
+      isPaused = true;
+      document.getElementById('pauseBtn').classList.add('hidden');
+      document.getElementById('resumeBtn').classList.remove('hidden');
+      update(ref(db, 'gameState'), { status: 'paused' });
+    };
+
+    window.resumeGame = () => {
+      const m = parseInt(document.getElementById('editMin').value) || 0;
+      const s = parseInt(document.getElementById('editSec').value) || 0;
+      timeLeft = m * 60 + s;
+      isPaused = false;
+      document.getElementById('pauseBtn').classList.remove('hidden');
+      document.getElementById('resumeBtn').classList.add('hidden');
+      update(ref(db, 'gameState'), { status: 'start', qIdx: currentIdx });
+    };
+
+    // ─── PUZZLE ───
+    function buildPuzzle() {
+      const overlay = document.getElementById('puzzleOverlay');
+      overlay.innerHTML = '';
+      openedPieces = 0;
+      document.getElementById('openedCount').textContent = '0';
+
+      for (let i = 0; i < 16; i++) {
+        const p = document.createElement('div');
+        p.className = 'puzzle-piece';
+        p.onclick = () => {
+          if (!p.classList.contains('revealed') && openedPieces < 5) {
+            p.classList.add('revealed');
+            openedPieces++;
+            revealedPieces.push(i);
+            update(ref(db, 'gameState'), { puzzleRevealed: revealedPieces });
+            document.getElementById('openedCount').textContent = openedPieces;
+            playFX(SFX.tick);
+          }
+        };
+        overlay.appendChild(p);
+      }
+    }
+
+    window.revealAll = () => {
+      revealedPieces = Array.from({ length: 16 }, (_, i) => i);
+      update(ref(db, 'gameState'), { puzzleRevealed: revealedPieces });
+      document.querySelectorAll('.puzzle-piece:not(.revealed)').forEach((p, i) => {
+        setTimeout(() => {
+          p.classList.add('revealed');
+          openedPieces++;
+          document.getElementById('openedCount').textContent = openedPieces;
+        }, i * 30);
+      });
+      playFX(SFX.reveal);
+    };
+
+    // ─── LOAD QUESTION ───
+    function loadQuestion(idx) {
+      currentIdx = idx;
+      answered = false;
+      revealedPieces = [];
+      update(ref(db, 'gameState'), { puzzleRevealed: revealedPieces });
+      const soal = MASTER_SOAL[idx];
+
+      document.getElementById('qChip').textContent = `SOAL ${idx + 1}/${MASTER_SOAL.length}`;
+      document.getElementById('qText').textContent = soal.q;
+      document.getElementById('resultBadge').classList.add('hidden');
+      document.getElementById('nextBtn').classList.add('hidden');
+      document.getElementById('finishBtn').classList.add('hidden');
+      document.getElementById('pauseBtn').classList.remove('hidden');
+      document.getElementById('resumeBtn').classList.add('hidden');
+
+      // Image
+      const img = document.getElementById('quizImg');
+      const ph = document.getElementById('imgPlaceholder');
+      if (soal.img) {
+        img.src = soal.img;
+        img.style.display = 'block';
+        ph.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        ph.querySelector('span').textContent = soal.emoji || '✝️';
+        ph.style.display = 'flex';
+      }
+
+      // Choices
+      const cd = document.getElementById('choicesDisplay');
+      if (soal.type === 'choice') {
+        cd.classList.remove('hidden');
+        cd.innerHTML = soal.opts.map((o, i) =>
+          `<div class="choice-item">${['A', 'B', 'C', 'D'][i]}. ${o}</div>`
+        ).join('');
+      } else {
+        cd.classList.add('hidden');
+      }
+
+      buildPuzzle();
+
+      // Reset & start timer
+      timeLeft = parseInt(document.getElementById('timerSetting').value) || 30;
+      maxTime = timeLeft;
+      updateTimerUI();
+      startTimer();
+    }
+
+    // ─── START GAME ───
+    window.startGame = async () => {
+      const snap = await get(ref(db, 'peserta'));
+      if (!snap.exists()) return alert('Belum ada peserta yang bergabung!');
+
+      playFX(SFX.start);
+      bgMusic.play().catch(() => { });
+
+      showOnly('countdownScreen');
+
+      let count = 3;
+      document.getElementById('cdNum').textContent = count;
+      update(ref(db, 'gameState'), { status: 'countdown', count });
+
+      const cdInt = setInterval(() => {
+        count--;
+        if (count > 0) {
+          document.getElementById('cdNum').textContent = count;
+          update(ref(db, 'gameState'), { status: 'countdown', count });
+        } else if (count === 0) {
+          document.getElementById('cdNum').textContent = 'GO!';
+          update(ref(db, 'gameState'), { status: 'countdown', count: 'GO!' });
+        } else {
+          clearInterval(cdInt);
+          showOnly('quizScreen');
+          // ✅ Kirim seluruh bank soal ke Firebase agar peserta pakai soal yang sama
+          set(ref(db, 'bankSoal'), MASTER_SOAL);
+          update(ref(db, 'gameState'), { status: 'start', qIdx: 0 });
+          loadQuestion(0);
+        }
+      }, 1000);
+    };
+
+    // ─── NEXT QUESTION ───
+    window.nextQuestion = () => {
+      const next = currentIdx + 1;
+      update(ref(db, 'gameState'), { status: 'start', qIdx: next });
+      loadQuestion(next);
+    };
+
+    // ─── FINISH ───
+    window.finishGame = async () => {
+      isPaused = true;
+      clearInterval(timerInterval);
+      playFX(SFX.finish);
+      update(ref(db, 'gameState'), { status: 'finish' });
+      showOnly('finishScreen');
+      confetti({ particleCount: 300, spread: 120, origin: { y: 0.5 } });
+
+      const snap = await get(ref(db, 'peserta'));
+      if (!snap.exists()) return;
+      const players = Object.values(snap.val()).sort((a, b) => (b.points || 0) - (a.points || 0));
+
+      const names = ['rank1name', 'rank2name', 'rank3name'];
+      const pts = ['rank1pts', 'rank2pts', 'rank3pts'];
+      players.slice(0, 3).forEach((p, i) => {
+        document.getElementById(names[i]).textContent = p.nama || '—';
+        document.getElementById(pts[i]).textContent = (p.points || 0) + ' pts';
+      });
+
+      const fr = document.getElementById('fullRanking');
+      fr.innerHTML = players.map((p, i) => `
+    <div class="lb-row">
+      <span class="font-bold text-white/40 w-6 text-sm">${i + 1}</span>
+      <span class="flex-1 font-bold text-sm">${p.nama}</span>
+      <span class="text-yellow-400 font-bold text-sm">${p.points || 0} pts</span>
+      <span class="text-white/30 text-xs">${p.benar || 0} benar</span>
+    </div>
+  `).join('');
+    };
+
+    // ─── RESET ───
+    window.resetGame = () => {
+      if (!confirm('Hapus semua data peserta dan reset kuis?')) return;
+      remove(ref(db, 'peserta'));
+      remove(ref(db, 'timer'));
+      set(ref(db, 'gameState'), { status: 'lobby' });
+      isPaused = true;
+      clearInterval(timerInterval);
+      showOnly('lobbyScreen');
+    };
+
+    window.backToLobby = () => {
+      showOnly('lobbyScreen');
+      set(ref(db, 'gameState'), { status: 'lobby' });
+    };
+
+    // ─── RESULT ───
+    function showResult(text, colorClass) {
+      answered = true;
+      isPaused = true;
+      clearInterval(timerInterval);
+      const rb = document.getElementById('resultBadge');
+      rb.textContent = text;
+      rb.className = `result-badge text-white text-center ${colorClass}`;
+      rb.classList.remove('hidden');
+
+      const isLast = currentIdx >= MASTER_SOAL.length - 1;
+      document.getElementById(isLast ? 'finishBtn' : 'nextBtn').classList.remove('hidden');
+    }
+
+    // ─── REALTIME LISTENERS ───
+    onValue(ref(db, 'peserta'), snap => {
+      const data = snap.val();
+      const pg = document.getElementById('playerGrid');
+      const ll = document.getElementById('lobbyLeaderboard');
+      const lv = document.getElementById('liveLeaderboard');
+      const cnt = document.getElementById('lobbyCount');
+      const big = document.getElementById('bigCount');
+
+      if (!data) {
+        pg.innerHTML = '<div class="text-white/30 text-sm italic col-span-3 text-center py-8">Menunggu peserta bergabung...</div>';
+        ll.innerHTML = '<div class="text-white/30 text-sm italic">Belum ada poin...</div>';
+        if (lv) lv.innerHTML = '';
+        cnt.textContent = '0'; big.textContent = '0';
+        return;
+      }
+
+      const players = Object.values(data).sort((a, b) => (b.points || 0) - (a.points || 0));
+      cnt.textContent = players.length;
+      big.textContent = players.length;
+
+      // Player grid (lobby)
+      pg.innerHTML = players.map(p => `
+    <div class="player-card">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+        style="background:linear-gradient(135deg,var(--purple),#9b6dff)">${p.nama?.[0] || '?'}</div>
+      <span class="font-bold text-sm truncate">${p.nama}</span>
+    </div>
+  `).join('');
+
+      // Lobby mini leaderboard
+      ll.innerHTML = players.slice(0, 5).map((p, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.07);padding:6px 12px;border-radius:99px;white-space:nowrap;">
+      <span style="color:var(--gold);font-weight:900;font-size:0.8rem">${i + 1}</span>
+      <span style="font-weight:700;font-size:0.8rem">${p.nama}</span>
+      <span style="color:var(--gold);font-size:0.75rem;font-weight:700">${p.points || 0}pts</span>
+    </div>
+  `).join('');
+
+      // Quiz live leaderboard
+      if (lv) lv.innerHTML = players.map((p, i) => `
+    <div class="lb-row">
+      <span class="font-bold text-xs" style="color:${i === 0 ? 'var(--gold)' : i === 1 ? '#9ca3af' : i === 2 ? '#cd7f32' : 'rgba(255,255,255,0.4)'}">${i + 1}</span>
+      <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+        style="background:linear-gradient(135deg,var(--purple),#9b6dff);flex-shrink:0">${p.nama?.[0] || '?'}</div>
+      <span class="flex-1 font-bold text-xs truncate">${p.nama}</span>
+      <span class="text-yellow-400 font-bold text-xs">${p.points || 0}</span>
+    </div>
+  `).join('');
+    });
+
+    // ─── UTILS ───
+    function showOnly(id) {
+      ['lobbyScreen', 'countdownScreen', 'quizScreen', 'finishScreen'].forEach(s => {
+        document.getElementById(s).classList.toggle('hidden', s !== id);
+      });
+    }
+
+    // Listen for result submission from host (manual — host klik jawaban benar/salah via keyboard shortcut)
+    document.addEventListener('keydown', e => {
+      const qs = document.getElementById('quizScreen');
+      if (qs.classList.contains('hidden') || answered) return;
+      if (e.key === 'Enter') {
+        playFX(SFX.correct);
+        showResult('✅ JAWABAN DITERIMA!', 'bg-green-600');
+        revealAll();
+        confetti({ particleCount: 120, spread: 60, origin: { y: 0.6 } });
+      }
+      if (e.key === 'Backspace') {
+        playFX(SFX.wrong);
+        showResult(`❌ SALAH! Jawaban: ${MASTER_SOAL[currentIdx].n}`, 'bg-red-600');
+      }
+    });
+  </script>
+</body>
+
+</html>
