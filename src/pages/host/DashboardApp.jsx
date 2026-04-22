@@ -11,8 +11,7 @@ const SFX = {
   start:   new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_165686008b.mp3'),
   finish:  new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
 };
-const bgMusic = new Audio('https://cdn.pixabay.com/audio/2024/02/09/audio_65123d6a66.mp3'); // Upbeat Game Show BGM
-bgMusic.loop = true; bgMusic.volume = 0.25;
+const bgMusic = null; // Kita ganti pakai YouTube Iframe di bawah agar bisa pake link YT
 const playFX = (s) => { s.currentTime = 0; s.play().catch(() => {}); };
 
 // ========================================================
@@ -321,7 +320,6 @@ export default function DashboardApp() {
     const snap = await get(ref(db, 'peserta'));
     if (!snap.exists()) { alert('Belum ada peserta yang bergabung!'); return; }
     playFX(SFX.start);
-    if (musicOn) bgMusic.play().catch(() => {});
     setScreen('countdown');
     let count = 3;
     setCountNum(count);
@@ -369,11 +367,7 @@ export default function DashboardApp() {
   };
 
   const toggleMusic = () => {
-    setMusicOn(m => {
-      const next = !m;
-      if (next) bgMusic.play().catch(() => {}); else bgMusic.pause();
-      return next;
-    });
+    setMusicOn(m => !m);
   };
 
   return (
@@ -386,6 +380,17 @@ export default function DashboardApp() {
       <footer className="fixed bottom-2 left-0 right-0 text-center pointer-events-none z-50">
         <p className="text-white/10 text-[10px] tracking-[0.3em] uppercase">By Flyxa Dev</p>
       </footer>
+
+      {/* Hidden YouTube BGM */}
+      {musicOn && (
+        <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          <iframe 
+            width="0" height="0" 
+            src="https://www.youtube.com/embed/hNUCS6vHDeM?autoplay=1&loop=1&playlist=hNUCS6vHDeM" 
+            allow="autoplay"
+          />
+        </div>
+      )}
     </>
   );
 }
