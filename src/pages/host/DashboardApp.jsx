@@ -11,7 +11,7 @@ const SFX = {
   start:   new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_165686008b.mp3'),
   finish:  new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
 };
-const bgMusic = new Audio('https://cdn.pixabay.com/audio/2022/10/16/audio_12b6b9b0ad.mp3');
+const bgMusic = new Audio('https://cdn.pixabay.com/audio/2024/02/09/audio_65123d6a66.mp3'); // Upbeat Game Show BGM
 bgMusic.loop = true; bgMusic.volume = 0.25;
 const playFX = (s) => { s.currentTime = 0; s.play().catch(() => {}); };
 
