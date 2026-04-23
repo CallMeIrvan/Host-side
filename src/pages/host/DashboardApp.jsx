@@ -224,7 +224,7 @@ function FinishScreen({ players, onBackToLobby }) {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-8" style={{ background: '#0a0a1a' }}>
       <div className="text-center">
         <div className="font-title text-3xl sm:text-4xl leading-tight" style={{ color: 'var(--gold)', textShadow: '0 0 20px rgba(245,197,24,0.6)' }}>
-          NEWDOWN KUIS<br />FPK KEMAHKRIS INSTIKI 2026
+          NEWDAWN KUIS<br />FPK KEMAHKRIS INSTIKI 2026
         </div>
         <p className="text-white/50 mt-2">oleh sie acara — Kuis Selesai!</p>
       </div>
