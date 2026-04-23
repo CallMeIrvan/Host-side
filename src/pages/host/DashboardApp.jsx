@@ -41,7 +41,7 @@ function LobbyScreen({ players, onStart, onReset, musicOn, onToggleMusic, select
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-title text-2xl sm:text-3xl leading-tight" style={{ color: 'var(--gold)', textShadow: '0 0 20px rgba(245,197,24,0.6)' }}>
-            NEWDOWN KUIS<br />FPK KEMAHKRIS INSTIKI 2026
+            NEWDAWN KUIS<br />FPK KEMAHKRIS INSTIKI 2026
           </h1>
           <p className="text-sm text-white/50 mt-1">Dashboard · oleh sie acara</p>
         </div>
